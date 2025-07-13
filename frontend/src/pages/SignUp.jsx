@@ -4,7 +4,7 @@ import { useState } from "react";
 import signUpImg from "../assets/images/signup.gif";
 import { Link, useNavigate } from "react-router-dom";
 import { toast, ToastContainer } from "react-toastify";
-import api from "../api"; // 🔄 Centralized Axios
+import api from "../../api";
 import "react-toastify/dist/ReactToastify.css";
 
 function Signup() {

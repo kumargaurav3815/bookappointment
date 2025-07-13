@@ -6,7 +6,7 @@ import { Link } from "react-router-dom";
 import { ToastContainer, toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import forgotPasswordImg from "../assets/images/forgot-password.webp";
-import api from "../api";
+import api from "../../api";
 
 const ForgotPasswordRequest = () => {
   const [email, setEmail] = useState("");

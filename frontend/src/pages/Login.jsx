@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from "react";
 import loginImg from "../assets/images/login.gif";
-import api from "../api"; // updated path
+import api from "../../api";
 import { useNavigate } from "react-router-dom";
 import { toast, ToastContainer } from "react-toastify";
 import { Link } from "react-router-dom";
@@ -12,6 +12,7 @@ function Login() {
   const navigateTo = useNavigate();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [confirmPassword, setConfirmPassword] = useState("");
   const [hasShownExpiredMessage, setHasShownExpiredMessage] = useState(false);
 
   const handleLogin = async (e) => {
@@ -20,6 +21,7 @@ function Login() {
       const res = await api.post("/user/login", {
         email,
         password,
+        confirmPassword,
       });
 
       toast.success(res.data.message || "Login successful!");
@@ -120,6 +122,19 @@ function Login() {
                   onChange={(e) => setPassword(e.target.value)}
                   required
                   autoComplete="current-password"
+                />
+              </div>
+
+              <div className="mb-5">
+                <input
+                  type="password"
+                  name="confirmPassword"
+                  className="w-full pr-4 py-3 border-b border-solid border-[#0066ff61] focus:outline-none focus:border-b-primaryColor text-[16px] leading-7 text-headingColor placeholder:text-textColor cursor-pointer"
+                  placeholder="Confirm Password"
+                  value={confirmPassword}
+                  onChange={(e) => setConfirmPassword(e.target.value)}
+                  required
+                  autoComplete="new-password"
                 />
               </div>
 

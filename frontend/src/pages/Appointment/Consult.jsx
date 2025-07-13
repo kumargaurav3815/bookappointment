@@ -1,13 +1,13 @@
 /** @format */
 
-import axios from "axios";
 import { useState, useEffect, useRef } from "react";
 import { ToastContainer, toast } from "react-toastify";
-import "react-toastify/dist/ReactToastify.css";
-import consultationImg from "../../assets/images/onlineAppointment.png";
 import Header from "../../components/Header/Header";
+import consultationImg from "../../assets/images/onlineAppointment.png";
 import emailjs from "@emailjs/browser";
 import { Link } from "react-router-dom";
+import axios from "axios";
+import "react-toastify/dist/ReactToastify.css";
 
 function Consultation() {
   const [currentDate, setCurrentDate] = useState("");
@@ -18,50 +18,29 @@ function Consultation() {
   const [callType, setCallType] = useState("video");
   const [prescriptionNeed, setPrescriptionNeed] = useState(false);
   const [isFormValid, setIsFormValid] = useState(false);
+
   const form = useRef();
 
   useEffect(() => {
     const today = new Date();
-    const year = today.getFullYear();
-    const month = String(today.getMonth() + 1).padStart(2, "0");
-    const day = String(today.getDate()).padStart(2, "0");
-    setCurrentDate(`${year}-${month}-${day}`);
+    setCurrentDate(today.toISOString().split("T")[0]);
   }, []);
 
   useEffect(() => {
-    const isValid =
+    setIsFormValid(
       name.trim() !== "" &&
-      email.trim() !== "" &&
-      appointmentDate !== "" &&
-      appointmentTime !== "";
-    setIsFormValid(isValid);
+        email.trim() !== "" &&
+        appointmentDate !== "" &&
+        appointmentTime !== ""
+    );
   }, [name, email, appointmentDate, appointmentTime]);
-
-  const sendEmail = (e) => {
-    e.preventDefault();
-
-    emailjs
-      .sendForm(
-        "service_67w4fp1",
-        "template_3ahxliv",
-        form.current,
-        "9bIhBrnGj8qVHGlZ-"
-      )
-      .then(
-        () => {
-          toast.success("Consultation booked and email sent successfully!!");
-        },
-        () => {
-          toast.error("Failed to send the email. Please try again.");
-        }
-      );
-  };
 
   const bookConsultation = async (e) => {
     e.preventDefault();
 
     try {
-      const response = await axios.post(
+      // Backend booking
+      const res = await axios.post(
         "https://bookappointment-ap2o.onrender.com/api/v1/consultations/book-consultation",
         {
           name,
@@ -73,20 +52,27 @@ function Consultation() {
         }
       );
 
-      sendEmail(e);
+      // Send confirmation email
+      await emailjs.sendForm(
+        "service_67w4fp1",
+        "template_3ahxliv",
+        form.current,
+        "9bIhBrnGj8qVHGlZ-"
+      );
 
+      toast.success(res.data.message || "Consultation booked successfully!");
+
+      // Reset fields
       setName("");
       setEmail("");
       setAppointmentDate("");
       setAppointmentTime("");
       setCallType("video");
       setPrescriptionNeed(false);
-
-      toast.success(response.data.message);
-    } catch (error) {
-      const errorMessage =
-        error.response?.data?.message || "Failed to book the consultation!";
-      toast.error(errorMessage);
+    } catch (err) {
+      const msg =
+        err.response?.data?.message || "Failed to book the consultation!";
+      toast.error(msg);
     }
   };
 
@@ -96,6 +82,7 @@ function Consultation() {
       <ToastContainer />
       <div className="max-w-[1170px] mx-auto bg-white shadow-lg rounded-lg overflow-hidden mt-8">
         <div className="grid grid-cols-1 lg:grid-cols-2">
+          {/* Image Section */}
           <div className="hidden lg:flex justify-center items-center">
             <figure className="w-full h-full flex justify-center items-center">
               <img
@@ -106,8 +93,9 @@ function Consultation() {
             </figure>
           </div>
 
+          {/* Form Section */}
           <div className="p-8 lg:pl-16 py-10">
-            <h3 className="text-headingColor text-[22px] leading-9 font-bold mb-10 text-center lg:text-left">
+            <h3 className="text-headingColor text-[22px] font-bold mb-10 text-center lg:text-left">
               Book your Consultation Now
             </h3>
 
@@ -116,11 +104,12 @@ function Consultation() {
                 <input
                   type="text"
                   name="name"
-                  className="form_input w-full p-3 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primaryColor mt-1"
                   placeholder="Full Name"
+                  className="w-full p-3 border border-gray-300 rounded-md focus:ring-2 focus:ring-primaryColor"
                   value={name}
                   onChange={(e) => setName(e.target.value)}
                   required
+                  autoComplete="name"
                 />
               </div>
 
@@ -128,23 +117,23 @@ function Consultation() {
                 <input
                   type="email"
                   name="email"
-                  className="form_input w-full p-3 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primaryColor mt-1 text-black"
                   placeholder="Email Address"
+                  className="w-full p-3 border border-gray-300 rounded-md focus:ring-2 focus:ring-primaryColor"
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
                   required
+                  autoComplete="email"
                 />
               </div>
 
               <div className="mb-5">
                 <input
                   type="date"
-                  id="appointment"
                   name="appointmentDate"
-                  className="form_input w-full p-3 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primaryColor mt-1"
                   min={currentDate}
                   value={appointmentDate}
                   onChange={(e) => setAppointmentDate(e.target.value)}
+                  className="w-full p-3 border border-gray-300 rounded-md focus:ring-2 focus:ring-primaryColor"
                   required
                 />
               </div>
@@ -153,9 +142,9 @@ function Consultation() {
                 <input
                   type="time"
                   name="appointmentTime"
-                  className="form_input w-full p-3 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primaryColor mt-1"
                   value={appointmentTime}
                   onChange={(e) => setAppointmentTime(e.target.value)}
+                  className="w-full p-3 border border-gray-300 rounded-md focus:ring-2 focus:ring-primaryColor"
                   required
                 />
               </div>
@@ -163,9 +152,9 @@ function Consultation() {
               <div className="mb-5">
                 <select
                   name="callType"
-                  className="form_input w-full p-3 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primaryColor mt-1"
                   value={callType}
-                  onChange={(e) => setCallType(e.target.value)}>
+                  onChange={(e) => setCallType(e.target.value)}
+                  className="w-full p-3 border border-gray-300 rounded-md focus:ring-2 focus:ring-primaryColor">
                   <option value="video">Video Call</option>
                   <option value="audio">Audio Call</option>
                 </select>
@@ -176,21 +165,28 @@ function Consultation() {
                   type="checkbox"
                   name="prescriptionNeed"
                   checked={prescriptionNeed}
-                  onChange={() => setPrescriptionNeed(!prescriptionNeed)}
+                  onChange={() =>
+                    setPrescriptionNeed((prevState) => !prevState)
+                  }
                   className="mr-2"
                 />
-                <label>Prescription Needed?</label>
+                <label htmlFor="prescriptionNeed">Prescription Needed?</label>
               </div>
 
-              <div>
+              <div className="mt-6">
                 <button
                   type="submit"
                   disabled={!isFormValid}
-                  className="w-full py-2 px-4 bg-primaryColor text-white font-bold rounded-md disabled:bg-gray-400">
+                  className={`w-full py-3 px-4 font-semibold rounded-lg transition-colors duration-300 ${
+                    isFormValid
+                      ? "bg-primaryColor text-white hover:bg-primaryDark"
+                      : "bg-gray-300 text-gray-500 cursor-not-allowed"
+                  }`}>
                   Book Consultation
                 </button>
               </div>
             </form>
+
             <div className="mt-4 text-center lg:text-left">
               <Link
                 to="/appointment"
