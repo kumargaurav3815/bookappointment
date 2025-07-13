@@ -23,10 +23,7 @@ config({ path: "./config/config.env" });
 const app = express();
 
 // Middleware
-const allowedOrigins = [
-  "http://localhost:5173",
-  "https://bookappointmentonline.netlify.app",
-];
+const allowedOrigins = ["https://bookappointmentonline.netlify.app"];
 
 const corsOptions = {
   origin: function (origin, callback) {
