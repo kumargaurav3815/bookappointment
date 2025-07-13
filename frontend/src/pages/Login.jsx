@@ -1,7 +1,8 @@
 /** @format */
+
 import { useState, useEffect } from "react";
 import loginImg from "../assets/images/login.gif";
-import axios from "axios";
+import api from "../api"; // updated path
 import { useNavigate } from "react-router-dom";
 import { toast, ToastContainer } from "react-toastify";
 import { Link } from "react-router-dom";
@@ -11,30 +12,24 @@ function Login() {
   const navigateTo = useNavigate();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
-  const [confirmPassword, setConfirmPassword] = useState("");
-  const [hasShownExpiredMessage, setHasShownExpiredMessage] = useState(false); // Track if the expired message has been shown
+  const [hasShownExpiredMessage, setHasShownExpiredMessage] = useState(false);
 
   const handleLogin = async (e) => {
     e.preventDefault();
     try {
-      const res = await axios.post("http://localhost:5000/api/v1/user/login", {
+      const res = await api.post("/user/login", {
         email,
         password,
-        confirmPassword,
       });
 
       toast.success(res.data.message || "Login successful!");
-
       const token = res.data.token;
       localStorage.setItem("token", token);
-      // Check token expiration on successful login
       checkTokenExpiration(token);
       setTimeout(() => {
         navigateTo("/");
       }, 500);
     } catch (error) {
-      // console.error("Login error:", error);
-
       if (error.response) {
         toast.error(
           error.response.data.message || "Login failed. Please try again."
@@ -53,17 +48,17 @@ function Login() {
     localStorage.removeItem("token");
     if (!hasShownExpiredMessage) {
       toast.info("Your session has expired. Please log in again.");
-      setHasShownExpiredMessage(true); // Set the message status to true
+      setHasShownExpiredMessage(true);
     }
     navigateTo("/login");
   };
 
   const checkTokenExpiration = (token) => {
     if (!token) return;
-
     const payload = token.split(".")[1];
     const decodedPayload = JSON.parse(atob(payload));
-    const expirationTime = decodedPayload.exp * 1000; // Convert to milliseconds
+    const expirationTime = decodedPayload.exp * 1000;
+
     if (expirationTime < Date.now()) {
       handleLogout();
       return;
@@ -74,7 +69,7 @@ function Login() {
         handleLogout();
         clearInterval(intervalId);
       }
-    }, 1000); // Check every second
+    }, 1000);
 
     return () => clearInterval(intervalId);
   };
@@ -87,7 +82,7 @@ function Login() {
   }, []);
 
   return (
-    <section className="flex items-center justify-center min-h-screen w-full ">
+    <section className="flex items-center justify-center min-h-screen w-full">
       <div className="max-w-[1170px] w-full px-4">
         <div className="grid grid-cols-1 lg:grid-cols-2">
           <div className="hidden lg:block">
@@ -128,19 +123,6 @@ function Login() {
                 />
               </div>
 
-              <div className="mb-5">
-                <input
-                  type="password"
-                  name="confirmPassword"
-                  className="w-full pr-4 py-3 border-b border-solid border-[#0066ff61] focus:outline-none focus:border-b-primaryColor text-[16px] leading-7 text-headingColor placeholder:text-textColor cursor-pointer"
-                  placeholder="Confirm Password"
-                  value={confirmPassword}
-                  onChange={(e) => setConfirmPassword(e.target.value)}
-                  required
-                  autoComplete="new-password"
-                />
-              </div>
-
               <div className="mt-7">
                 <button
                   type="submit"
@@ -148,13 +130,15 @@ function Login() {
                   Login
                 </button>
               </div>
+
               <p className="mt-2 text-textColor text-center">
                 <Link
                   to="/forgotPassword"
                   className="text-primaryColor font-medium ml-1">
-                  Forgot Password ?
+                  Forgot Password?
                 </Link>
               </p>
+
               <hr className="h-px my-4 bg-gray-200 border-0 dark:bg-gray-800" />
 
               <div>

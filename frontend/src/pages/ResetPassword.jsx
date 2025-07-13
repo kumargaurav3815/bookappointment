@@ -2,8 +2,8 @@
 
 import { useState, useEffect } from "react";
 import { useNavigate, useParams } from "react-router-dom";
-import axios from "axios";
 import { ToastContainer, toast } from "react-toastify";
+import api from "../api"; // centralized axios
 import "react-toastify/dist/ReactToastify.css";
 
 const ResetPassword = () => {
@@ -30,22 +30,19 @@ const ResetPassword = () => {
     }
 
     try {
-      const response = await axios.put(
-        `http://localhost:5000/api/v1/user/reset-password/${token}`,
-        { password }
-      );
-      // console.log("Password reset success:", response.data);
-      toast.success(response.data.message);
+      const response = await api.put(`/user/reset-password/${token}`, {
+        password,
+      });
 
+      toast.success(response.data.message || "Password reset successful!");
       setTimeout(() => {
         navigateTo("/login");
-      }, 500);
+      }, 1000);
     } catch (error) {
-      console.error(
-        "Error during password reset:",
-        error.response ? error.response.data : error.message
+      toast.error(
+        error.response?.data?.message ||
+          "Failed to reset password. Please try again later."
       );
-      toast.error("Failed to reset password. Please try again later.");
     }
   };
 
@@ -57,7 +54,6 @@ const ResetPassword = () => {
         </h3>
 
         <form onSubmit={handleResetPassword}>
-          {/* Password Input */}
           <div className="mb-6">
             <label className="block text-sm font-medium text-gray-700 mb-2">
               New Password
@@ -73,7 +69,6 @@ const ResetPassword = () => {
             />
           </div>
 
-          {/* Confirm Password Input */}
           <div className="mb-6">
             <label className="block text-sm font-medium text-gray-700 mb-2">
               Confirm New Password
@@ -89,7 +84,6 @@ const ResetPassword = () => {
             />
           </div>
 
-          {/* Submit Button */}
           <div className="mt-8">
             <button
               type="submit"
@@ -99,7 +93,6 @@ const ResetPassword = () => {
           </div>
         </form>
 
-        {/* Toast Notifications */}
         <ToastContainer />
       </div>
     </section>

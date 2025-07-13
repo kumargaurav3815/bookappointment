@@ -2,9 +2,9 @@
 
 import { useState } from "react";
 import signUpImg from "../assets/images/signup.gif";
-import axios from "axios";
 import { Link, useNavigate } from "react-router-dom";
 import { toast, ToastContainer } from "react-toastify";
+import api from "../api"; // 🔄 Centralized Axios
 import "react-toastify/dist/ReactToastify.css";
 
 function Signup() {
@@ -17,18 +17,11 @@ function Signup() {
 
   const navigateTo = useNavigate();
 
-  const validateEmail = (email) => {
-    const re = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-    return re.test(String(email).toLowerCase());
-  };
+  const validateEmail = (email) =>
+    /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email.toLowerCase());
 
-  const validatePhone = (phone) => {
-    return phone.length >= 10;
-  };
-
-  const validatePassword = (password) => {
-    return password.length >= 6;
-  };
+  const validatePhone = (phone) => phone.length >= 10;
+  const validatePassword = (password) => password.length >= 6;
 
   const handleRegistration = async (e) => {
     e.preventDefault();
@@ -47,24 +40,21 @@ function Signup() {
     }
 
     try {
-      const res = await axios.post(
-        "http://localhost:5000/api/v1/user/patient/register",
-        {
-          firstName,
-          lastName,
-          email,
-          phone,
-          gender,
-          password,
-        }
-      );
+      const res = await api.post("/user/patient/register", {
+        firstName,
+        lastName,
+        email,
+        phone,
+        gender,
+        password,
+      });
 
       toast.success(res.data.message || "Registration successful!");
       setTimeout(() => {
         navigateTo("/login");
-      }, 500);
+      }, 800);
 
-      // Clear form fields after successful registration
+      // Reset form fields
       setFirstName("");
       setLastName("");
       setEmail("");
@@ -73,15 +63,10 @@ function Signup() {
       setPassword("");
     } catch (error) {
       console.error("Registration error:", error);
-
-      if (error.response) {
-        toast.error(
-          error.response.data.message ||
-            "Registration failed. Please try again."
-        );
-      } else {
-        toast.error("Registration failed. Please try again.");
-      }
+      toast.error(
+        error.response?.data?.message ||
+          "Registration failed. Please try again."
+      );
     }
   };
 
@@ -109,68 +94,73 @@ function Signup() {
                 <input
                   type="text"
                   name="firstName"
-                  className="w-full pr-4 py-3 border-b border-solid border-[#0066ff61] focus:outline-none focus:border-b-primaryColor text-[16px] leading-7 text-headingColor placeholder:text-textColor cursor-pointer"
                   placeholder="First Name"
                   value={firstName}
                   onChange={(e) => setFirstName(e.target.value)}
+                  className="w-full pr-4 py-3 border-b border-[#0066ff61] focus:outline-none focus:border-b-primaryColor text-[16px] text-headingColor placeholder:text-textColor"
                   required
                 />
               </div>
+
               <div className="mb-5">
                 <input
                   type="text"
                   name="lastName"
-                  className="w-full pr-4 py-3 border-b border-solid border-[#0066ff61] focus:outline-none focus:border-b-primaryColor text-[16px] leading-7 text-headingColor placeholder:text-textColor cursor-pointer"
                   placeholder="Last Name"
                   value={lastName}
                   onChange={(e) => setLastName(e.target.value)}
+                  className="w-full pr-4 py-3 border-b border-[#0066ff61] focus:outline-none focus:border-b-primaryColor text-[16px] text-headingColor placeholder:text-textColor"
                   required
                 />
               </div>
+
               <div className="mb-5">
                 <input
                   type="email"
                   name="email"
-                  className="w-full pr-4 py-3 border-b border-solid border-[#0066ff61] focus:outline-none focus:border-b-primaryColor text-[16px] leading-7 text-headingColor placeholder:text-textColor cursor-pointer"
                   placeholder="Email Address"
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
+                  className="w-full pr-4 py-3 border-b border-[#0066ff61] focus:outline-none focus:border-b-primaryColor text-[16px] text-headingColor placeholder:text-textColor"
                   required
                   autoComplete="email"
                 />
               </div>
+
               <div className="mb-5">
                 <input
                   type="tel"
                   name="phone"
-                  className="w-full pr-4 py-3 border-b border-solid border-[#0066ff61] focus:outline-none focus:border-b-primaryColor text-[16px] leading-7 text-headingColor placeholder:text-textColor cursor-pointer"
                   placeholder="Phone Number"
                   value={phone}
                   onChange={(e) => setPhone(e.target.value)}
+                  className="w-full pr-4 py-3 border-b border-[#0066ff61] focus:outline-none focus:border-b-primaryColor text-[16px] text-headingColor placeholder:text-textColor"
                   required
                   autoComplete="tel"
                 />
               </div>
+
               <div className="mb-5">
                 <input
                   type="password"
                   name="password"
-                  className="w-full pr-4 py-3 border-b border-solid border-[#0066ff61] focus:outline-none focus:border-b-primaryColor text-[16px] leading-7 text-headingColor placeholder:text-textColor cursor-pointer"
                   placeholder="Password"
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
+                  className="w-full pr-4 py-3 border-b border-[#0066ff61] focus:outline-none focus:border-b-primaryColor text-[16px] text-headingColor placeholder:text-textColor"
                   required
-                  autoComplete="current-password"
+                  autoComplete="new-password"
                 />
               </div>
+
               <div className="mb-5 flex items-center justify-between">
                 <label className="text-headingColor font-bold text-[16px] leading-7">
                   Gender
                   <select
                     name="gender"
-                    className="text-textColor font-semibold text-[15px] leading-7 px-4 py-3 focus:outline-none"
                     value={gender}
                     onChange={(e) => setGender(e.target.value)}
+                    className="ml-4 text-textColor font-semibold text-[15px] px-4 py-3 border border-gray-300 rounded focus:outline-none"
                     required>
                     <option value="">Select</option>
                     <option value="Male">Male</option>
@@ -178,11 +168,15 @@ function Signup() {
                   </select>
                 </label>
               </div>
+
               <div className="mt-7">
-                <button className="w-full bg-primaryColor text-white text-[18px] leading-[30px] rounded-lg px-4 py-3">
+                <button
+                  type="submit"
+                  className="w-full bg-primaryColor text-white text-[18px] leading-[30px] rounded-lg px-4 py-3">
                   Sign Up
                 </button>
               </div>
+
               <p className="mt-5 text-textColor text-center">
                 Already have an account?
                 <Link
@@ -196,7 +190,6 @@ function Signup() {
         </div>
       </div>
 
-      {/* Toast Container */}
       <ToastContainer />
     </section>
   );

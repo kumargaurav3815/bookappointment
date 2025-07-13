@@ -1,9 +1,9 @@
 /** @format */
 
 import { useState, useEffect } from "react";
-import axios from "axios";
 import { ToastContainer, toast } from "react-toastify";
 import Header from "../components/Header/Header";
+import api from "../api";
 import "react-toastify/dist/ReactToastify.css";
 
 const MyAppointments = () => {
@@ -15,43 +15,36 @@ const MyAppointments = () => {
   const [sortBy, setSortBy] = useState("date");
   const [isAppointments, setIsAppointments] = useState(true);
 
-  // Fetch Appointments
   const fetchAppointments = async () => {
     try {
       setLoading(true);
-      const token = localStorage.getItem("token");
-      const response = await axios.get(
-        "http://localhost:5000/api/v1/user/getAppointments",
-        { headers: { Authorization: `Bearer ${token}` } }
-      );
+      const response = await api.get("/user/getAppointments");
       setAppointments(response.data.appointments);
       setFilteredData(response.data.appointments);
     } catch (err) {
-      toast.error("Failed to fetch appointments.");
+      toast.error(
+        err.response?.data?.message || "Failed to fetch appointments."
+      );
     } finally {
       setLoading(false);
     }
   };
 
-  // Fetch Consultations
   const fetchConsultations = async () => {
     try {
       setLoading(true);
-      const token = localStorage.getItem("token");
-      const response = await axios.get(
-        "http://localhost:5000/api/v1/user/getConsultations",
-        { headers: { Authorization: `Bearer ${token}` } }
-      );
+      const response = await api.get("/user/getConsultations");
       setConsultations(response.data.consultations);
       setFilteredData(response.data.consultations);
     } catch (err) {
-      toast.error("Failed to fetch consultations.");
+      toast.error(
+        err.response?.data?.message || "Failed to fetch consultations."
+      );
     } finally {
       setLoading(false);
     }
   };
 
-  // Handle Search
   const handleSearch = (e) => {
     const value = e.target.value.toLowerCase();
     setSearchTerm(value);
@@ -61,11 +54,9 @@ const MyAppointments = () => {
     setFilteredData(filtered);
   };
 
-  // Sort Data
   const handleSort = (e) => {
     const criteria = e.target.value;
     setSortBy(criteria);
-
     const today = new Date();
 
     const sorted = [...filteredData].sort((a, b) => {
@@ -74,12 +65,10 @@ const MyAppointments = () => {
       } else if (criteria === "name") {
         return a.name.localeCompare(b.name);
       } else if (criteria === "upcoming") {
-        // Upcoming appointments appear first
         const aIsUpcoming = new Date(a.appointmentDate) >= today;
         const bIsUpcoming = new Date(b.appointmentDate) >= today;
         return aIsUpcoming === bIsUpcoming ? 0 : aIsUpcoming ? -1 : 1;
       } else if (criteria === "past") {
-        // Past appointments appear first
         const aIsPast = new Date(a.appointmentDate) < today;
         const bIsPast = new Date(b.appointmentDate) < today;
         return aIsPast === bIsPast ? 0 : aIsPast ? -1 : 1;
@@ -90,7 +79,6 @@ const MyAppointments = () => {
     setFilteredData(sorted);
   };
 
-  // Button Click
   const handleButtonClick = (type) => {
     setIsAppointments(type === "appointments");
     type === "appointments" ? fetchAppointments() : fetchConsultations();
@@ -100,11 +88,9 @@ const MyAppointments = () => {
     fetchAppointments();
   }, []);
 
-  // Format Date
   const formatDate = (date) =>
     date ? new Date(date).toLocaleDateString("en-GB") : "No Date";
 
-  // Get Status Badge
   const getStatusBadge = (date) => {
     const today = new Date();
     const appointmentDate = new Date(date);

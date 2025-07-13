@@ -2,10 +2,11 @@
 
 import { useState } from "react";
 import { Link } from "react-router-dom";
-import axios from "axios";
+// import axios from "axios";
 import { ToastContainer, toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import forgotPasswordImg from "../assets/images/forgot-password.webp";
+import api from "../api";
 
 const ForgotPasswordRequest = () => {
   const [email, setEmail] = useState("");
@@ -14,10 +15,9 @@ const ForgotPasswordRequest = () => {
     e.preventDefault();
 
     try {
-      const response = await axios.post(
-        "http://localhost:5000/api/v1/user/request-password-reset",
-        { email }
-      );
+      const response = await api.post("/user/request-password-reset", {
+        email,
+      });
       toast.success(response.data.message);
     } catch (error) {
       // console.error("Error requesting password reset:", error);
