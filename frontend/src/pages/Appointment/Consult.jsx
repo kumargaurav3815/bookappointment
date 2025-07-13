@@ -6,8 +6,9 @@ import Header from "../../components/Header/Header";
 import consultationImg from "../../assets/images/onlineAppointment.png";
 import emailjs from "@emailjs/browser";
 import { Link } from "react-router-dom";
-import axios from "axios";
+// import axios from "axios";
 import "react-toastify/dist/ReactToastify.css";
+import api from "../../../api";
 
 function Consultation() {
   const [currentDate, setCurrentDate] = useState("");
@@ -40,17 +41,14 @@ function Consultation() {
 
     try {
       // Backend booking
-      const res = await axios.post(
-        "https://bookappointment-ap2o.onrender.com/api/v1/consultations/book-consultation",
-        {
-          name,
-          email,
-          appointmentDate,
-          appointmentTime,
-          callType,
-          prescriptionNeed,
-        }
-      );
+      const res = await api.post("consultations/book-consultation", {
+        name,
+        email,
+        appointmentDate,
+        appointmentTime,
+        callType,
+        prescriptionNeed,
+      });
 
       // Send confirmation email
       await emailjs.sendForm(

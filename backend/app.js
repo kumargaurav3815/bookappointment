@@ -3,8 +3,6 @@
 import express from "express";
 import { config } from "dotenv";
 import cors from "cors";
-import path from "path";
-import { fileURLToPath } from "url";
 import { dbConnection } from "./database/dbConnection.js";
 import { errorMiddleware } from "./middlewares/errorMiddleware.js";
 import appointmentRoutes from "./router/userRouter.js";
@@ -14,23 +12,26 @@ import getConsultations from "./router/userRouter.js";
 import resetPassword from "./router/userRouter.js";
 import requestPasswordReset from "./router/userRouter.js";
 import userRouter from "./router/userRouter.js";
-config({ path: "./config/config.env" });
 
-// Create __dirname equivalent
-// const __filename = fileURLToPath(import.meta.url);
-// const __dirname = path.dirname(__filename);
+// Load environment variables
+config({ path: "./config/config.env" });
 
 const app = express();
 
-// Middleware
-const allowedOrigins = ["https://bookappointmentonline.netlify.app"];
+// Parse allowed origins from .env
+const allowedOrigins = process.env.FRONTEND_URL
+  ? process.env.FRONTEND_URL.split(",").map((origin) => origin.trim())
+  : [];
 
+console.log("✅ Allowed Origins:", allowedOrigins);
+
+// CORS middleware
 const corsOptions = {
   origin: function (origin, callback) {
     if (!origin || allowedOrigins.includes(origin)) {
       callback(null, true);
     } else {
-      callback(new Error("Not allowed by CORS"));
+      callback(new Error("Not allowed by CORS: " + origin));
     }
   },
   methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
@@ -39,9 +40,13 @@ const corsOptions = {
 };
 
 app.use(cors(corsOptions));
-app.options("*", cors(corsOptions)); // for preflight requests
+app.options("*", cors(corsOptions)); // Preflight support
 
-// Initialize database connection
+// Express middleware
+app.use(express.json());
+app.use(express.urlencoded({ extended: true }));
+
+// Connect DB
 dbConnection();
 
 // Routes
@@ -52,21 +57,7 @@ app.use("/api/v1/getAppointments", getAppointments);
 app.use("/api/v1/getConsultations", getConsultations);
 app.put("/api/v1/user/reset-password/:token", resetPassword);
 
-// // Serve static files from the frontend directory
-// app.use(express.static(path.join(__dirname, "../frontend/dist")));
-
-// // Serve the React app for reset-password route
-// app.get("/reset-password/:token", (req, res) => {
-//   res.sendFile(path.join(__dirname, "../frontend/dist", "index.html"));
-// });
-
-// // Fallback route to serve React app
-// Fallback route to serve React app
-// app.get("*", (req, res) => {
-//   res.sendFile(path.join(__dirname, "../frontend/dist", "index.html"));
-// });
-
-// Error handling middleware
+// Error Middleware
 app.use(errorMiddleware);
 
 export default app;
